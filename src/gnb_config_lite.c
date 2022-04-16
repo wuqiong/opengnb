@@ -323,7 +323,15 @@ void gnb_config_lite(gnb_core_t *gnb_core){
     int i;
 
     if ( NULL == gnb_conf_ext_lite.node_route_string ) {
-        gnb_conf_ext_lite.node_route_string = "1001|10.1.0.1|255.255.0.0,1002|10.1.0.2|255.255.0.0,1003|10.1.0.3|255.255.0.0,1004|10.1.0.4|255.255.0.0,1005|10.1.0.5|255.255.0.0";
+        static char default_route_string[32*256];
+        for (i = 1; i < 256; i++)
+        {
+            //1255|10.1.0.255|255.255.0.0,
+            char node[32] = {'\0'};
+            snprintf(node, sizeof(node), "%d|10.1.0.%d|255.255.0.0,", 1000+i, i);
+            strncat(default_route_string, node, sizeof(default_route_string) - 1);
+        }
+        gnb_conf_ext_lite.node_route_string = default_route_string;
     }
 
     setup_node_route(gnb_core, gnb_conf_ext_lite.node_route_string);
