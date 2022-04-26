@@ -14,10 +14,26 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__) || defined(__OpenBSD__)
+#define __UNIX_LIKE_OS__ 1
+#endif
 
 #include <limits.h>
 #include <stddef.h>
 #include <string.h>
+
+#ifdef __UNIX_LIKE_OS__
+#include <arpa/inet.h>
+#include <netdb.h>
+#endif
+
+#if defined(_WIN32)
+#undef _WIN32_WINNT
+#define _WIN32_WINNT 0x0600
+
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#endif
 
 #include "ed25519/ed25519.h"
 #include "ed25519/sha512.h"
@@ -53,6 +69,47 @@ char * check_domain_name(char *host_string){
     }
 
     return NULL;
+}
+
+int gnb_do_resolv_domain_name(char *host_string, gnb_address_t *address_st, gnb_log_ctx_t *log) {
+    if ( host_string == NULL || address_st == NULL) {
+        return -1;
+    }
+
+    int ret;
+    struct addrinfo hints;
+    memset(&hints, 0, sizeof(struct addrinfo));
+
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_CANONNAME;
+
+    struct addrinfo *result;
+    char ip_addr[INET6_ADDRSTRLEN] = "";
+    ret = getaddrinfo(host_string, NULL, &hints, &result);
+
+    if ( 0 != ret ) {
+        return -1;
+    }
+
+    switch(result->ai_addr->sa_family) {
+        case AF_INET6:
+            address_st->type = AF_INET6;
+            memcpy(address_st->m_address6, &(((struct sockaddr_in6 *)(result->ai_addr))->sin6_addr), 16);
+            inet_ntop(AF_INET6, &(((struct sockaddr_in6 *)(result->ai_addr))->sin6_addr), ip_addr, sizeof(ip_addr));
+            break;
+        case AF_INET:
+            address_st->type = AF_INET;
+            memcpy(address_st->m_address4, &(((struct sockaddr_in *)(result->ai_addr))->sin_addr), 4);
+            inet_ntop(AF_INET, &(((struct sockaddr_in *)(result->ai_addr))->sin_addr), ip_addr, sizeof(ip_addr));
+            break;
+        default:
+            break;
+    }
+    //ugly. only pick the first result.
+    GNB_LOG3(log, GNB_LOG_ID_CORE, "gnb conf resolved %s to %s", host_string, ip_addr);
+    freeaddrinfo(result);
+    return 0;
 }
 
 /*判断 配置行第二列是ip地址 还是node id*/

@@ -39,6 +39,7 @@
 #include "ed25519/sha512.h"
 
 char * check_domain_name(char *host_string);
+int gnb_do_resolv_domain_name(char *host_string, gnb_address_t *address_st, gnb_log_ctx_t *log);
 char * check_node_route(char *config_line_string);
 gnb_node_t * gnb_node_init(gnb_core_t *gnb_core, uint32_t uuid32);
 int check_listen_string(char *listen_string);
@@ -110,13 +111,17 @@ static void address_file_config(gnb_core_t *gnb_core){
             continue;
         }
 
-        if ( NULL!=check_domain_name(host_string) ) {
-            //域名
-            continue;
-        }
-
         memset(&address_st, 0, sizeof(gnb_address_t));
         address_st.port = htons(port);
+
+        if ( NULL != check_domain_name(host_string) ) {
+            //域名
+            int ret = gnb_do_resolv_domain_name(host_string, &address_st, gnb_core->log);
+            if (0 != ret) {
+                continue;
+            }
+        }
+
 
         if ( NULL != strchr(host_string, '.') ) {
             //ipv4
