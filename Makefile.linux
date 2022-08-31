@@ -1,4 +1,4 @@
-CFLAGS=-O2 -ffunction-sections -fdata-sections -Wno-unused-result -I./src/ -I./libs/ -I./libs/miniupnpc/
+CFLAGS=-ffunction-sections -fdata-sections -Wno-unused-result -I./src -I./libs -I./libs/miniupnpc -I./libs/libnatpmp
 CLI_LDFLAGS=-Wl,--gc-sections -L/usr/lib -pthread
 GNB_ES_LDFLAGS=-Wl,--gc-sections -L/usr/lib -pthread
 
@@ -6,6 +6,7 @@ GNB_ES_LDFLAGS=-Wl,--gc-sections -L/usr/lib -pthread
 ifeq ($(DEBUG),1)
 CFLAGS += -g
 else
+CFLAGS += -O2
 CLI_LDFLAGS    += -s
 GNB_ES_LDFLAGS += -s
 endif
@@ -26,6 +27,7 @@ GNB_CLI_OBJS =                             \
        ./src/unix/unix_platform.o          \
        ./src/linux/gnb_drv_linux.o
 
+GNB_ES_OBJS += ./src/unix/unix_platform.o
 
 all:${GNB_CLI} ${GNB_CRYPTO} ${GNB_ES} ${GNB_CTL}
 
@@ -34,8 +36,8 @@ $(GNB_CTL): $(GNB_CTL_OBJS)
 	${CC} -o ${GNB_CTL} ${GNB_CTL_OBJS} ${CLI_LDFLAGS}
 
 
-$(GNB_ES): $(GNB_ES_OBJS) ${CRYPTO_OBJS} $(MINIUPNP_OBJS)
-	${CC} -o ${GNB_ES} ${GNB_ES_OBJS} ${CRYPTO_OBJS} ${MINIUPNP_OBJS} ${GNB_ES_LDFLAGS}
+$(GNB_ES): $(GNB_ES_OBJS) ${CRYPTO_OBJS} ${MINIUPNP_OBJS} ${LIBNATPMP_OBJS}
+	${CC} -o ${GNB_ES} ${GNB_ES_OBJS} ${CRYPTO_OBJS} ${MINIUPNP_OBJS} ${LIBNATPMP_OBJS} ${GNB_ES_LDFLAGS}
 
 
 $(GNB_CRYPTO): $(CRYPTO_OBJS) ./src/gnb_crypto.o

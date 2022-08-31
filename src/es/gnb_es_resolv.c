@@ -42,6 +42,8 @@
 #include "gnb_address.h"
 #include "gnb_es_type.h"
 
+int gnb_test_field_separator(char *config_string);
+
 static char * check_domain_name(char *host_string){
 
     if ( NULL != strchr(host_string, ':') ){
@@ -186,6 +188,8 @@ void gnb_resolv_address(gnb_es_ctx *es_ctx){
 
     int num;
 
+    int ret;
+
     do{
 
         num = fscanf(file,"%1024s\n",line_buffer);
@@ -199,10 +203,17 @@ void gnb_resolv_address(gnb_es_ctx *es_ctx){
             continue;
         }
 
-        num = sscanf(line_buffer,"%16[^|]|%u|%256[^|]|%hu\n", attrib_string, &uuid32, host_string, &port);
+        ret = gnb_test_field_separator(line_buffer);
+
+        if ( GNB_CONF_FIELD_SEPARATOR_TYPE_SLASH == ret ) {
+            num = sscanf(line_buffer,"%16[^/]/%u/%256[^/]/%hu\n", attrib_string, &uuid32, host_string, &port);
+        } else if ( GNB_CONF_FIELD_SEPARATOR_TYPE_VERTICAL == ret ) {
+            num = sscanf(line_buffer,"%16[^|]|%u|%256[^|]|%hu\n", attrib_string, &uuid32, host_string, &port);
+        } else {
+            num = 0;
+        }
 
         if ( 4 != num ) {
-
             continue;
         }
 
@@ -224,7 +235,6 @@ void gnb_resolv_address(gnb_es_ctx *es_ctx){
 
 
     }while(1);
-
 
     fclose(file);
 
