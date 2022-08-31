@@ -161,13 +161,14 @@ void gnb_resolv_address(gnb_es_ctx *es_ctx){
 
     char address_file[PATH_MAX+NAME_MAX];
 
-    snprintf(address_file, PATH_MAX+NAME_MAX, "%s/%s", conf_dir, "address.conf");
-
+    snprintf(address_file, PATH_MAX+NAME_MAX, "%s/%s", conf_dir[0]=='\0'?".":conf_dir, "address.conf");
+    printf("address_file:%s\n", address_file);
     FILE *file;
 
     file = fopen(address_file,"r");
 
     if (NULL==file){
+        printf("address_file:%s open failed.\n", address_file);
         return;
     }
 
@@ -192,6 +193,7 @@ void gnb_resolv_address(gnb_es_ctx *es_ctx){
         if ( EOF == num ) {
             break;
         }
+        printf("address line:%s\n", line_buffer);
 
         if ('#' == line_buffer[0]) {
             continue;
