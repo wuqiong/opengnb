@@ -24,6 +24,7 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+
 #endif
 
 #ifdef _WIN32
@@ -39,6 +40,7 @@
 #endif
 
 #include "gnb_udp.h"
+
 
 int gnb_bind_udp_socket_ipv4(int socketfd,const char *host, int port){
 

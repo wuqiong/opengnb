@@ -14,6 +14,12 @@ MINIUPNP_OBJS =                            \
        ./libs/miniupnpc/minissdpc.o
 
 
+LIBNATPMP_OBJS =                            \
+       ./libs/libnatpmp/natpmp.o            \
+       ./libs/libnatpmp/getgateway.o        \
+       ./libs/libnatpmp/wingettimeofday.o   \
+
+
 CRYPTO_OBJS =                               \
        ./libs/ed25519/add_scalar.o          \
        ./libs/ed25519/fe.o                  \
@@ -64,6 +70,7 @@ GNB_OBJS =                                 \
 
 GNB_PF_OBJS   =                                  \
       ./src/gnb_pf.o                             \
+      ./src/gnb_unified_forwarding.o             \
       ./src/packet_filter/gnb_pf_route.o         \
       ./src/packet_filter/gnb_pf_crypto_xor.o    \
       ./src/packet_filter/gnb_pf_crypto_arc4.o   \
@@ -87,7 +94,10 @@ GNB_ES_OBJS =                             \
       ./src/gnb_log.o                     \
       ./src/gnb_alloc.o                   \
       ./src/gnb_mmap.o                    \
+      ./src/gnb_dir.o                     \
       ./src/gnb_hash32.o                  \
+      ./src/gnb_conf.o                    \
+      ./src/gnb_arg_list.o                \
       ./libs/hash/murmurhash.o
 
 
@@ -104,7 +114,5 @@ GNB_CTL_OBJS =                            \
        ./src/gnb_mmap.o                   \
        ./libs/ed25519/sha512.o
 
-
 GNB_OBJS    += ./src/gnb_mod_register.o
 GNB_ES_OBJS += ./src/es/gnb_es_platform.o
-

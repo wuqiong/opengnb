@@ -137,7 +137,14 @@ static void setup_node_address(gnb_core_t *gnb_core, char *node_address_string) 
         }
 
 
-        if ( NULL != strchr(host_string, '.') ) {
+        if ( NULL != check_domain_name(host_string) ) {
+            //域名
+            int ret = gnb_do_resolv_domain_name(host_string, &address_st, gnb_core->log);
+            if (0 != ret) {
+                continue;
+            }
+        }
+        else if ( NULL != strchr(host_string, '.') ) {
             //ipv4
             inet_pton(AF_INET, host_string, (struct in_addr *)&address_st.m_address4);
             address_st.type = AF_INET;
@@ -341,7 +348,8 @@ void gnb_config_lite(gnb_core_t *gnb_core){
 
     setup_node_route(gnb_core, gnb_conf_ext_lite.node_route_string);
 
-    gnb_core->ctl_block->node_zone->node_num = gnb_core->node_nums;
+    gnb_core->ctl_block->node_zone->node_num   = gnb_core->node_nums;
+    gnb_core->ctl_block->core_zone->local_uuid = gnb_core->conf->local_uuid;
 
     gnb_init_node_key512(gnb_core);
 
