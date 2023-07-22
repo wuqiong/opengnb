@@ -363,7 +363,7 @@ void gnb_pf_tun(gnb_core_t *gnb_core, gnb_payload16_t *payload){
 
         ret = gnb_unified_forwarding_tun(gnb_core, &pf_ctx_st);
 
-        if ( 0 == ret ) {
+        if ( ret > 0 ) {
             pf_ctx_st.unified_forwarding = 1;
         } else {
             pf_ctx_st.unified_forwarding = 0;
@@ -379,7 +379,7 @@ void gnb_pf_tun(gnb_core_t *gnb_core, gnb_payload16_t *payload){
 
         ret = gnb_unified_forwarding_tun(gnb_core, &pf_ctx_st);
 
-        if ( 0 == ret ) {
+        if ( ret > 0 ) {
             pf_ctx_st.unified_forwarding = 1;
         } else {
             pf_ctx_st.unified_forwarding = 0;
@@ -448,9 +448,9 @@ pf_tun_fwd:
     gnb_core->local_node->out_bytes  += pf_ctx_st.ip_frame_size;
 
     if ( pf_ctx_st.dst_uuid32 == pf_ctx_st.fwd_node->uuid32 ) {
-        GNB_LOG3(gnb_core->log, GNB_LOG_ID_PF, ">>> tun payload forward src=%u dst=%u >>>\n", pf_ctx_st.src_uuid32, pf_ctx_st.fwd_node->uuid32);
+        GNB_LOG3(gnb_core->log, GNB_LOG_ID_PF, ">>> tun payload forward to inet src=%u dst=%u >>>\n", pf_ctx_st.src_uuid32, pf_ctx_st.fwd_node->uuid32);
     } else {
-        GNB_LOG3(gnb_core->log, GNB_LOG_ID_PF, "*>> tun payload forward src=%u dst=%u fwd=%u *>>\n", pf_ctx_st.src_uuid32, pf_ctx_st.dst_uuid32, pf_ctx_st.fwd_node->uuid32);
+        GNB_LOG3(gnb_core->log, GNB_LOG_ID_PF, "*>> tun payload forward to inet src=%u dst=%u fwd=%u *>>\n", pf_ctx_st.src_uuid32, pf_ctx_st.dst_uuid32, pf_ctx_st.fwd_node->uuid32);
     }
 
 
@@ -468,7 +468,7 @@ if_dump:
 
         fwd_uuid32 = NULL != pf_ctx_st.fwd_node ? pf_ctx_st.fwd_node->uuid32:0;
 
-        GNB_LOG3(gnb_core->log, GNB_LOG_ID_PF, "tun src=%u dst=%u= fwd=%u [%s] [%s] relay=%d,unified=%d,direct=%d,forward=%d ip_frame_size=%u\n",
+        GNB_LOG3(gnb_core->log, GNB_LOG_ID_PF, "tun src=%u dst=%u fwd=%u [%s] [%s] relay=%d,unified=%d,direct=%d,forward=%d ip_frame_size=%u\n",
                pf_ctx_st.src_uuid32, pf_ctx_st.dst_uuid32, fwd_uuid32,
                gnb_pf_status_strings[pf_tun_frame_status], gnb_pf_status_strings[pf_tun_route_status],
                pf_ctx_st.relay_forwarding, pf_ctx_st.unified_forwarding, pf_ctx_st.direct_forwarding, pf_ctx_st.std_forwarding,
@@ -645,6 +645,8 @@ void gnb_pf_inet(gnb_core_t *gnb_core, gnb_payload16_t *payload, gnb_sockaddress
         gnb_core->local_node->in_bytes += pf_ctx_st.ip_frame_size;
         pf_ctx_st.src_node->out_bytes  += pf_ctx_st.ip_frame_size;
 
+        GNB_LOG3(gnb_core->log, GNB_LOG_ID_PF, "<<< int payload forward to tun src=%u dst=%u <<<\n", pf_ctx_st.src_uuid32, pf_ctx_st.dst_uuid32);
+
         goto pf_inet_finish;
 
     }
@@ -657,6 +659,8 @@ void gnb_pf_inet(gnb_core_t *gnb_core, gnb_payload16_t *payload, gnb_sockaddress
 
         gnb_core->local_node->out_bytes += pf_ctx_st.ip_frame_size;
         pf_ctx_st.fwd_node->in_bytes    += pf_ctx_st.ip_frame_size;
+
+        GNB_LOG3(gnb_core->log, GNB_LOG_ID_PF, "<*< int payload forward to inet src=%u dst=%u fwd=%u >*>\n", pf_ctx_st.src_uuid32, pf_ctx_st.dst_uuid32, fwd_uuid32);
 
     }
 

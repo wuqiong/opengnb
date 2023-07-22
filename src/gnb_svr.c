@@ -228,7 +228,7 @@ static void setup_log_ctx(gnb_conf_t *conf, gnb_log_ctx_t *log){
     log->config_table[GNB_LOG_ID_INDEX_SERVICE_WORKER].file_level     = GNB_LOG_LEVEL1;
     log->config_table[GNB_LOG_ID_INDEX_SERVICE_WORKER].udp_level      = GNB_LOG_LEVEL1;
 
-    snprintf(log->config_table[GNB_LOG_ID_DETECT_WORKER].log_name, 20, "DETECT");
+    snprintf(log->config_table[GNB_LOG_ID_DETECT_WORKER].log_name, 20, "FULL_DETECT");
     log->config_table[GNB_LOG_ID_DETECT_WORKER].console_level = GNB_LOG_LEVEL1;
     log->config_table[GNB_LOG_ID_DETECT_WORKER].file_level    = GNB_LOG_LEVEL1;
     log->config_table[GNB_LOG_ID_DETECT_WORKER].udp_level     = GNB_LOG_LEVEL1;
@@ -340,17 +340,17 @@ static void setup_log_ctx(gnb_conf_t *conf, gnb_log_ctx_t *log){
 
     if ( GNB_LOG_LEVEL_UNSET != conf->index_log_level ) {
 
-        if ( 0 == conf->lite_mode ){
+        if ( 0 == conf->lite_mode ) {
 
             if ( conf->console_log_level >= conf->index_log_level ) {
                 log->config_table[GNB_LOG_ID_INDEX_WORKER].console_level = conf->index_log_level;
             }
 
-            if ( conf->file_log_level > conf->index_log_level ) {
+            if ( conf->file_log_level >= conf->index_log_level ) {
                 log->config_table[GNB_LOG_ID_INDEX_WORKER].file_level = conf->index_log_level;
             }
 
-            if ( conf->udp_log_level > conf->index_log_level ) {
+            if ( conf->udp_log_level >= conf->index_log_level ) {
                 log->config_table[GNB_LOG_ID_INDEX_WORKER].udp_level = conf->index_log_level;
             }
 
@@ -372,11 +372,11 @@ static void setup_log_ctx(gnb_conf_t *conf, gnb_log_ctx_t *log){
                 log->config_table[GNB_LOG_ID_INDEX_SERVICE_WORKER].console_level = conf->index_service_log_level;
             }
 
-            if ( conf->file_log_level > conf->index_service_log_level ) {
+            if ( conf->file_log_level >= conf->index_service_log_level ) {
                 log->config_table[GNB_LOG_ID_INDEX_SERVICE_WORKER].file_level = conf->index_service_log_level;
             }
 
-            if ( conf->udp_log_level > conf->index_service_log_level ) {
+            if ( conf->udp_log_level >= conf->index_service_log_level ) {
                 log->config_table[GNB_LOG_ID_INDEX_SERVICE_WORKER].udp_level = conf->index_service_log_level;
             }
 
@@ -394,7 +394,7 @@ static void setup_log_ctx(gnb_conf_t *conf, gnb_log_ctx_t *log){
 
         if ( 0 == conf->lite_mode ) {
 
-            if ( conf->console_log_level > conf->detect_log_level ) {
+            if ( conf->console_log_level >= conf->detect_log_level ) {
                 log->config_table[GNB_LOG_ID_DETECT_WORKER].console_level = conf->detect_log_level;
             }
 
@@ -469,13 +469,13 @@ gnb_core_t* gnb_core_create(gnb_conf_t *conf){
     gnb_core->ifname = (char *)gnb_core->ctl_block->core_zone->ifname;
     gnb_core->if_device_string = (char *)gnb_core->ctl_block->core_zone->if_device_string;
 
-    gnb_core->uuid_node_map   = gnb_hash32_create(gnb_core->heap, 1024,1024); //以节点的uuid32作为key的 node 表
-    gnb_core->ipv4_node_map   = gnb_hash32_create(gnb_core->heap, 1024,1024);
+    gnb_core->uuid_node_map   = gnb_hash32_create(gnb_core->heap, 1024, 1024); //以节点的uuid32作为key的 node 表
+    gnb_core->ipv4_node_map   = gnb_hash32_create(gnb_core->heap, 1024, 1024);
 
     //以节点的subnet(uint32)作为key的 node 表
-    gnb_core->subneta_node_map = gnb_hash32_create(gnb_core->heap, 1024,1024);
-    gnb_core->subnetb_node_map = gnb_hash32_create(gnb_core->heap, 1024,1024);
-    gnb_core->subnetc_node_map = gnb_hash32_create(gnb_core->heap, 1024,1024);
+    gnb_core->subneta_node_map = gnb_hash32_create(gnb_core->heap, 1024, 1024);
+    gnb_core->subnetb_node_map = gnb_hash32_create(gnb_core->heap, 1024, 1024);
+    gnb_core->subnetc_node_map = gnb_hash32_create(gnb_core->heap, 1024, 1024);
 
     int64_t now_sec = gnb_timestamp_sec();
     gnb_update_time_seed(gnb_core, now_sec);
@@ -944,8 +944,7 @@ static void exec_es(gnb_core_t *gnb_core) {
 #endif
 
 
-
-void exec_loop_script(gnb_core_t *gnb_core, const char *script_file_name){
+static void exec_loop_script(gnb_core_t *gnb_core, const char *script_file_name){
 
     char script_dir[PATH_MAX];
     char script_file[PATH_MAX+NAME_MAX];
@@ -1027,7 +1026,7 @@ void primary_process_loop( gnb_core_t *gnb_core ){
             #endif
 
             #if defined(__OpenBSD__)
-            exec_loop_script(gnb_core,"if_loop_linux.sh");
+            exec_loop_script(gnb_core,"if_loop_openbsd.sh");
             #endif
 
             #if defined(__linux__)
